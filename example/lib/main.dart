@@ -7,6 +7,43 @@ import 'package:flutter/services.dart'
 
 void main() => runApp(const MyApp());
 
+MaterialColor toMaterialColor(Color color) {
+  Map<int, Color> getSwatch(Color color) {
+    final hslColor = HSLColor.fromColor(color);
+    final lightness = hslColor.lightness;
+
+    /// if [500] is the default color, there are at LEAST five
+    /// steps below [500]. (i.e. 400, 300, 200, 100, 50.) A
+    /// divisor of 5 would mean [50] is a lightness of 1.0 or
+    /// a color of #ffffff. A value of six would be near white
+    /// but not quite.
+    const lowDivisor = 6;
+
+    /// if [500] is the default color, there are at LEAST four
+    /// steps above [500]. A divisor of 4 would mean [900] is
+    /// a lightness of 0.0 or color of #000000
+    const highDivisor = 5;
+
+    final lowStep = (1.0 - lightness) / lowDivisor;
+    final highStep = lightness / highDivisor;
+
+    return {
+      50: (hslColor.withLightness(lightness + (lowStep * 5))).toColor(),
+      100: (hslColor.withLightness(lightness + (lowStep * 4))).toColor(),
+      200: (hslColor.withLightness(lightness + (lowStep * 3))).toColor(),
+      300: (hslColor.withLightness(lightness + (lowStep * 2))).toColor(),
+      400: (hslColor.withLightness(lightness + lowStep)).toColor(),
+      500: (hslColor.withLightness(lightness)).toColor(),
+      600: (hslColor.withLightness(lightness - highStep)).toColor(),
+      700: (hslColor.withLightness(lightness - (highStep * 2))).toColor(),
+      800: (hslColor.withLightness(lightness - (highStep * 3))).toColor(),
+      900: (hslColor.withLightness(lightness - (highStep * 4))).toColor(),
+    };
+  }
+
+  return MaterialColor(color.value, getSwatch(color));
+}
+
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -36,6 +73,32 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: _colors?.toLightColorScheme(),
+        backgroundColor: _colors?.toLightColorScheme().background,
+        cardColor: _colors?.toLightColorScheme().surface,
+        errorColor: _colors?.toLightColorScheme().error,
+        primaryColor: _colors?.toLightColorScheme().primary,
+        primaryColorLight: _colors?.toLightColorScheme().primary,
+        primaryColorBrightness: Brightness.light,
+        primaryColorDark: _colors?.toLightColorScheme().primaryVariant,
+        indicatorColor: _colors?.toLightColorScheme().primary,
+        canvasColor: _colors?.toLightColorScheme().background,
+        scaffoldBackgroundColor: _colors?.toLightColorScheme().background,
+        dialogBackgroundColor: _colors?.toLightColorScheme().surface,
+
+        /// TODO: find color values for these paramateres
+        secondaryHeaderColor: null,
+        bottomAppBarColor: null,
+        selectedRowColor: null,
+        highlightColor: null,
+        disabledColor: null,
+        toggleableActiveColor: null,
+        unselectedWidgetColor: null,
+        dividerColor: null,
+        splashColor: null,
+        shadowColor: null,
+        hoverColor: null,
+        focusColor: null,
+        hintColor: null,
       ),
       darkTheme: ThemeData(colorScheme: _colors?.toDarkColorScheme()),
       themeMode: _mode,
@@ -75,18 +138,9 @@ class _MyAppState extends State<MyApp> {
                             text: e,
                           ))
                       .toList(),
-                  indicator: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ),
                   automaticIndicatorColorAdjustment: true,
                   indicatorSize: TabBarIndicatorSize.label,
                   labelColor: Theme.of(context).colorScheme.primary,
-                  unselectedLabelColor:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.7),
                 );
               }),
               const Expanded(
@@ -145,24 +199,6 @@ class ChangeTheme extends StatelessWidget {
             },
             child: const Text('Read schemes from xml String'),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                color: const Color.fromARGB(255, 103, 80, 164),
-              ),
-              const SizedBox(
-                width: 12,
-              ),
-              Container(
-                width: 100,
-                height: 100,
-                color: const Color(0xff6750A4),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -178,21 +214,6 @@ class ViewThemeProperties extends StatefulWidget {
 
 class _ViewThemePropertiesState extends State<ViewThemeProperties> {
   bool fromSwatch = false;
-  MaterialColor toMaterialColor(Color color) {
-    Map<int, Color> map = {
-      50: Color.fromRGBO(color.red, color.green, color.blue, .1),
-      100: Color.fromRGBO(color.red, color.green, color.blue, .2),
-      200: Color.fromRGBO(color.red, color.green, color.blue, .3),
-      300: Color.fromRGBO(color.red, color.green, color.blue, .4),
-      400: Color.fromRGBO(color.red, color.green, color.blue, .5),
-      500: Color.fromRGBO(color.red, color.green, color.blue, .6),
-      600: Color.fromRGBO(color.red, color.green, color.blue, .7),
-      700: Color.fromRGBO(color.red, color.green, color.blue, .8),
-      800: Color.fromRGBO(color.red, color.green, color.blue, .9),
-      900: Color.fromRGBO(color.red, color.green, color.blue, 1),
-    };
-    return MaterialColor(color.value, map);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -229,11 +250,10 @@ class _ViewThemePropertiesState extends State<ViewThemeProperties> {
                       children: [
                         TextSpan(
                           text:
-                              'This will create a swatch by manipulating opacity, ',
+                              'This will create a swatch by manipulating lightness, ',
                         ),
                         TextSpan(
-                          text:
-                              'Color luminance is totally a different concept',
+                          text: 'Color luminance is totally different concept',
                           style: TextStyle(
                             decoration: TextDecoration.underline,
                           ),
