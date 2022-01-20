@@ -2,47 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:material_theme_builder/material_theme_builder.dart';
-import 'package:flutter/services.dart'
-    show rootBundle, Clipboard, ClipboardData;
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:material_theme_builder_test/view_theme_properties.dart';
+import 'package:material_theme_builder_test/widgets_example.dart';
 
 void main() => runApp(const MyApp());
-
-MaterialColor toMaterialColor(Color color) {
-  Map<int, Color> getSwatch(Color color) {
-    final hslColor = HSLColor.fromColor(color);
-    final lightness = hslColor.lightness;
-
-    /// if [500] is the default color, there are at LEAST five
-    /// steps below [500]. (i.e. 400, 300, 200, 100, 50.) A
-    /// divisor of 5 would mean [50] is a lightness of 1.0 or
-    /// a color of #ffffff. A value of six would be near white
-    /// but not quite.
-    const lowDivisor = 6;
-
-    /// if [500] is the default color, there are at LEAST four
-    /// steps above [500]. A divisor of 4 would mean [900] is
-    /// a lightness of 0.0 or color of #000000
-    const highDivisor = 5;
-
-    final lowStep = (1.0 - lightness) / lowDivisor;
-    final highStep = lightness / highDivisor;
-
-    return {
-      50: (hslColor.withLightness(lightness + (lowStep * 5))).toColor(),
-      100: (hslColor.withLightness(lightness + (lowStep * 4))).toColor(),
-      200: (hslColor.withLightness(lightness + (lowStep * 3))).toColor(),
-      300: (hslColor.withLightness(lightness + (lowStep * 2))).toColor(),
-      400: (hslColor.withLightness(lightness + lowStep)).toColor(),
-      500: (hslColor.withLightness(lightness)).toColor(),
-      600: (hslColor.withLightness(lightness - highStep)).toColor(),
-      700: (hslColor.withLightness(lightness - (highStep * 2))).toColor(),
-      800: (hslColor.withLightness(lightness - (highStep * 3))).toColor(),
-      900: (hslColor.withLightness(lightness - (highStep * 4))).toColor(),
-    };
-  }
-
-  return MaterialColor(color.value, getSwatch(color));
-}
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -66,41 +30,55 @@ class _MyAppState extends State<MyApp> {
 
   MaterialThemeColors? _colors;
   ThemeMode _mode = ThemeMode.light;
+  final bool debugUseHardcodedThemeData = false;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Material App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: _colors?.toLightColorScheme(),
-        backgroundColor: _colors?.toLightColorScheme().background,
-        cardColor: _colors?.toLightColorScheme().surface,
-        errorColor: _colors?.toLightColorScheme().error,
-        primaryColor: _colors?.toLightColorScheme().primary,
-        primaryColorLight: _colors?.toLightColorScheme().primary,
-        primaryColorBrightness: Brightness.light,
-        primaryColorDark: _colors?.toLightColorScheme().primaryVariant,
-        indicatorColor: _colors?.toLightColorScheme().primary,
-        canvasColor: _colors?.toLightColorScheme().background,
-        scaffoldBackgroundColor: _colors?.toLightColorScheme().background,
-        dialogBackgroundColor: _colors?.toLightColorScheme().surface,
+      theme: debugUseHardcodedThemeData
+          ? ThemeData(
+              colorScheme: _colors?.toLightColorScheme(),
+              backgroundColor: _colors?.toLightColorScheme().background,
+              cardColor: _colors?.toLightColorScheme().surface,
+              errorColor: _colors?.toLightColorScheme().error,
+              primaryColor: _colors?.toLightColorScheme().primary,
+              primaryColorLight: _colors?.toLightColorScheme().primary,
+              primaryColorBrightness: Brightness.light,
+              primaryColorDark: _colors?.toLightColorScheme().primaryVariant,
+              // The ThemeData.from is setting this value to (isDark ? colorScheme.onSurface : colorScheme.onPrimary)
+              // but the tabbars almost never on materials
+              indicatorColor: _colors?.toLightColorScheme().primary,
+              canvasColor: _colors?.toLightColorScheme().background,
+              scaffoldBackgroundColor: _colors?.toLightColorScheme().background,
+              dialogBackgroundColor: _colors?.toLightColorScheme().background,
+              dividerColor: _colors?.toLightColorScheme().onSurface.withOpacity(
+                  0.12), // this implementation is taken from ThemeData.from
+              iconTheme: IconThemeData(
+                color: _colors == null
+                    ? null
+                    : Color(_colors!.mdThemeLightTertiary),
+              ),
 
-        /// TODO: find color values for these paramateres
-        secondaryHeaderColor: null,
-        bottomAppBarColor: null,
-        selectedRowColor: null,
-        highlightColor: null,
-        disabledColor: null,
-        toggleableActiveColor: null,
-        unselectedWidgetColor: null,
-        dividerColor: null,
-        splashColor: null,
-        shadowColor: null,
-        hoverColor: null,
-        focusColor: null,
-        hintColor: null,
-      ),
-      darkTheme: ThemeData(colorScheme: _colors?.toDarkColorScheme()),
+              toggleableActiveColor: _colors?.toLightColorScheme().primary,
+            )
+          : ThemeData.from(
+              colorScheme:
+                  _colors?.toLightColorScheme() ?? const ColorScheme.light(),
+            ),
+      darkTheme: debugUseHardcodedThemeData
+          ? ThemeData(
+              colorScheme: _colors?.toDarkColorScheme(),
+              iconTheme: IconThemeData(
+                color: _colors == null
+                    ? null
+                    : Color(_colors!.mdThemeDarkTertiary),
+              ),
+            )
+          : ThemeData.from(
+              colorScheme:
+                  _colors?.toDarkColorScheme() ?? const ColorScheme.dark(),
+            ),
       themeMode: _mode,
       home: Scaffold(
         appBar: AppBar(
@@ -128,24 +106,29 @@ class _MyAppState extends State<MyApp> {
           ],
         ),
         body: DefaultTabController(
-          length: 2,
+          length: 3,
           child: Column(
             children: [
               Builder(builder: (context) {
                 return TabBar(
-                  tabs: ['Change Theme', 'View Theme Properties']
+                  tabs: [
+                    'Change Theme',
+                    'View Theme Properties',
+                    'Widgets Example'
+                  ]
                       .map((e) => Tab(
                             text: e,
                           ))
                       .toList(),
-                  automaticIndicatorColorAdjustment: true,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelColor: Theme.of(context).colorScheme.primary,
                 );
               }),
               const Expanded(
                 child: TabBarView(
-                  children: [ChangeTheme(), ViewThemeProperties()],
+                  children: [
+                    ChangeTheme(),
+                    ViewThemeProperties(),
+                    WidgetsExample(),
+                  ],
                 ),
               ),
             ],
@@ -200,326 +183,6 @@ class ChangeTheme extends StatelessWidget {
             child: const Text('Read schemes from xml String'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class ViewThemeProperties extends StatefulWidget {
-  const ViewThemeProperties({Key? key}) : super(key: key);
-
-  @override
-  State<ViewThemeProperties> createState() => _ViewThemePropertiesState();
-}
-
-class _ViewThemePropertiesState extends State<ViewThemeProperties> {
-  bool fromSwatch = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return OrientationBuilder(
-        builder: (BuildContext context, Orientation orientation) {
-      ColorScheme scheme = Theme.of(context).colorScheme;
-      if (fromSwatch) {
-        scheme = ColorScheme.fromSwatch(
-            primarySwatch: toMaterialColor(scheme.primary));
-      }
-      return Theme(
-        data: Theme.of(context).copyWith(colorScheme: scheme),
-        child: Builder(builder: (context) {
-          return Column(
-            children: [
-              SwitchListTile(
-                  value: fromSwatch,
-                  title: const Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: 'Use '),
-                        TextSpan(
-                          text: 'ColorScheme.fromSwatch',
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                        TextSpan(text: 'variant '),
-                      ],
-                    ),
-                  ),
-                  subtitle: const Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text:
-                              'This will create a swatch by manipulating lightness, ',
-                        ),
-                        TextSpan(
-                          text: 'Color luminance is totally different concept',
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                        TextSpan(text: ', this is just a test tool.'),
-                      ],
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      fromSwatch = value;
-                    });
-                  }),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // primary
-                        PropertyPreview(
-                          name: 'Primary',
-                          color: Theme.of(context).colorScheme.primary,
-                          onColor: Theme.of(context).colorScheme.onPrimary,
-                          variant: Theme.of(context).colorScheme.primaryVariant,
-                          orientation: orientation,
-                        ),
-                        // Secondary
-                        PropertyPreview(
-                          name: 'Secondary',
-                          color: Theme.of(context).colorScheme.secondary,
-                          onColor: Theme.of(context).colorScheme.onSecondary,
-                          variant:
-                              Theme.of(context).colorScheme.secondaryVariant,
-                          orientation: orientation,
-                        ),
-                        // Error
-                        PropertyPreview(
-                          name: 'Error',
-                          color: Theme.of(context).colorScheme.error,
-                          onColor: Theme.of(context).colorScheme.onError,
-                          orientation: orientation,
-                        ),
-                        // Background
-                        PropertyPreview(
-                          name: 'Background',
-                          color: Theme.of(context).colorScheme.background,
-                          onColor: Theme.of(context).colorScheme.onBackground,
-                          shouldBeReplaced: true,
-                          orientation: orientation,
-                        ),
-                        // Surface
-                        PropertyPreview(
-                          name: 'Surface',
-                          color: Theme.of(context).colorScheme.surface,
-                          onColor: Theme.of(context).colorScheme.onSurface,
-                          hasDivider: false,
-                          shouldBeReplaced: true,
-                          orientation: orientation,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }),
-      );
-    });
-  }
-}
-
-class PropertyPreview extends StatelessWidget {
-  final String name;
-  final Color color;
-  final Color onColor;
-  final Color? variant;
-  final bool hasDivider;
-  final Orientation orientation;
-  final bool shouldBeReplaced;
-
-  const PropertyPreview({
-    Key? key,
-    this.shouldBeReplaced = false,
-    required this.name,
-    required this.orientation,
-    required this.color,
-    required this.onColor,
-    this.variant,
-    this.hasDivider = true,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          name + ' Color',
-          style: Theme.of(context).textTheme.headline5!.copyWith(
-                color: shouldBeReplaced
-                    ? Theme.of(context).colorScheme.primary
-                    : color,
-                letterSpacing: 1.6,
-              ),
-        ),
-        const SizedBox(height: 16.0),
-        Builder(
-          builder: (BuildContext context) {
-            List<Widget> children = [
-              PreviewContainer(
-                name: name,
-                background: color,
-                foreground: onColor,
-              ),
-              PreviewContainer(
-                name: 'on' + name,
-                background: onColor,
-                foreground: color,
-              ),
-              if (variant != null)
-                PreviewContainer(
-                  name: 'Variant',
-                  background: variant!,
-                  foreground: Colors.white,
-                ),
-            ];
-            if (orientation == Orientation.portrait) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: children,
-              );
-            } else {
-              // to make sure it's fully responsive we calculate the left width space
-              // double width = MediaQuery.of(context).size.width - 48;
-              // width -= 48;
-              // width /= 2;
-              children = children
-                  .map(
-                    (e) => SizedBox(
-                      width: 300,
-                      child: e,
-                    ),
-                  )
-                  .toList();
-              return Wrap(
-                // crossAxisAlignment: CrossAxisAlignment.start,
-                // mainAxisSize: MainAxisSize.min,
-                children: children,
-                spacing: 16.0,
-                // children: [
-                //   Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //     children: [
-                //       for (var i = 0; i < 2; i++) children[i],
-                //     ],
-                //   ),
-                //   if (children.length == 3) children[2],
-                // ],
-              );
-            }
-          },
-        ),
-        const SizedBox(height: 16.0),
-        if (hasDivider) ...[
-          Divider(
-              color: shouldBeReplaced
-                  ? Theme.of(context).colorScheme.primary
-                  : color),
-          const SizedBox(height: 16.0),
-        ]
-      ],
-    );
-  }
-}
-
-class PreviewContainer extends StatelessWidget {
-  final String name;
-  final Color background;
-  final Color foreground;
-  final bool isOn;
-  const PreviewContainer({
-    Key? key,
-    required this.name,
-    required this.background,
-    required this.foreground,
-    this.isOn = false,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: SizedBox(
-        height: 150,
-        child: Container(
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: BorderRadius.circular(5.0),
-          ),
-          child: InkWell(
-            onTap: () async {
-              String data = '0x' + background.value.toRadixString(16);
-              await Clipboard.setData(ClipboardData(text: data));
-              ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-              messenger.clearMaterialBanners();
-              messenger.showMaterialBanner(
-                MaterialBanner(
-                  elevation: 5.0,
-                  content: Text.rich(
-                    TextSpan(
-                      text: 'Color',
-                      children: [
-                        TextSpan(
-                          text: ' ($data) ',
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1!
-                              .copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const TextSpan(text: 'is copied to your clipboard '),
-                        WidgetSpan(
-                          child: Icon(
-                            Icons.copy,
-                            size:
-                                Theme.of(context).textTheme.bodyText2!.fontSize,
-                          ),
-                        ),
-                        const TextSpan(text: ' .'),
-                      ],
-                    ),
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  actions: [
-                    TextButton.icon(
-                      onPressed: () {
-                        messenger.hideCurrentMaterialBanner();
-                      },
-                      icon: const Icon(Icons.close),
-                      label: const Text('Close'),
-                    ),
-                  ],
-                ),
-              );
-              await Future.delayed(const Duration(seconds: 5));
-              messenger.hideCurrentMaterialBanner();
-            },
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                        color: foreground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
