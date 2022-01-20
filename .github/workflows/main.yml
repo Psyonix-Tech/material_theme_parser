@@ -19,6 +19,7 @@ jobs:
       # The branch or tag ref that triggered the workflow will be checked out.
       # https://github.com/actions/checkout
       - uses: actions/checkout@v1
+      - name: build web page
         run: |
           cd ./example
           ls -a
