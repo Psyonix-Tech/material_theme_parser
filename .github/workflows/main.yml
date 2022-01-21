@@ -49,6 +49,7 @@ jobs:
           git config --global user.name "psyonixFx"
           git add --all
           git commit -m "CI build"
+          git remote -v
           git push -u origin web
           cp build/web 
       - run: echo "back to ori"
