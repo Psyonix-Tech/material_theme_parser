@@ -46,7 +46,7 @@ jobs:
           cp -r ./build/web/* material_theme_parser/
           cd material_theme_parser
           git config --global user.email "yousuf.mg.hammad@gmail.com"
-          git config --global user.name "CI Script"
+          git config --global user.name "psyonixFx"
           git add --all
           git commit -m "CI build"
           git push -u origin web
