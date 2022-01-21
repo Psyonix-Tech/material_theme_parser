@@ -25,7 +25,12 @@ jobs:
         with:
           flutter-version: "2.8.0"
           channel: "stable"
-
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_rsa # optional
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
       - run: flutter pub get
       # - run: flutter analyze
       - name: build web page
@@ -51,7 +56,6 @@ jobs:
           git commit -m "CI build"
           git remote -v
           git push -u origin web
-          cp build/web 
       - run: echo "back to ori"
       
       # # run  flutter widgets tests  and unit tests1
