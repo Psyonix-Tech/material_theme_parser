@@ -12,7 +12,7 @@ jobs:
     #The type of machine to run the job on. [windows,macos, ubuntu , self-hosted]
     defaults:
       run:
-        working-directory: ./
+        # working-directory: ./
     runs-on: ubuntu-latest
     #sequence of tasks called
     steps:
@@ -21,18 +21,28 @@ jobs:
       - uses: actions/checkout@v1
       # Setup a flutter environment.
       # https://github.com/marketplace/actions/flutter-action
-      - uses: subosito/flutter-action@v1
-        with:
-          flutter-version: "2.8.0"
-          channel: "stable"
-      - run: flutter pub get
+      # - uses: subosito/flutter-action@v1
+      #   with:
+      #     flutter-version: "2.8.0"
+      #     channel: "stable"
+      # - run: flutter pub get
       #- run: flutter analyze
       - name: build web page
         run: |
-          cd ./example
+          cd example
+          ls
+          git clone -b web https://github.com/Psyonix-Tech/material_theme_parser.git
+          cd material_theme_parser
+          rm -rf `find . ! -name ".git" ! -name "." ! -name ".."`
           ls -a
+          pwd
+          # build then this
+          cp -r ../build/web/* .
+          git push origing web
+          cp build/web 
+      - run: echo "back to ori"
       
-      # # run  flutter widgets tests  and unit tests
+      # # run  flutter widgets tests  and unit tests1
       # - run: flutter test --coverage
       # # Upload coverage reports to Codecov
       # # https://github.com/marketplace/actions/codecov
