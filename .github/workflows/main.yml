@@ -12,7 +12,7 @@ jobs:
     #The type of machine to run the job on. [windows,macos, ubuntu , self-hosted]
     defaults:
       run:
-        # working-directory: ./
+        working-directory: ./
     runs-on: ubuntu-latest
     #sequence of tasks called
     steps:
@@ -25,6 +25,7 @@ jobs:
         with:
           flutter-version: "2.8.0"
           channel: "stable"
+
       - run: flutter pub get
       - run: flutter analyze
       - name: build web page
