@@ -41,7 +41,7 @@ jobs:
           # build then this
           cp -r ./build/web/* material_theme_parser/
           cd material_theme_parser
-          git push 
+          git push -u origin web
           cp build/web 
       - run: echo "back to ori"
       
