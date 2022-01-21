@@ -36,7 +36,7 @@ jobs:
       - name: build web page
         run: |
           cd example
-          git clone -b web https://github.com/Psyonix-Tech/material_theme_parser.git
+          git clone -b web git@github.com:Psyonix-Tech/material_theme_parser.git
           cd material_theme_parser
           git branch
           ls -a
