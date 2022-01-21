@@ -27,7 +27,7 @@ jobs:
           channel: "stable"
 
       - run: flutter pub get
-      - run: flutter analyze
+      # - run: flutter analyze
       - name: build web page
         run: |
           cd example
