@@ -31,10 +31,14 @@ jobs:
       - name: build web page
         run: |
           cd example
-          ls
           git clone -b web https://github.com/Psyonix-Tech/material_theme_parser.git
           cd material_theme_parser
-          rm -rf `find . ! -name ".git" ! -name "." ! -name ".."`
+          git branch
+          ls -a
+          mv .git/ ../
+          rm -rf *
+          mv ../.git .git
+          git branch
           ls -a
           cd ..
           flutter build web --release
