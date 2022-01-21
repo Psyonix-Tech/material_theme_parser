@@ -30,7 +30,7 @@ jobs:
         with:
           key: ${{ secrets.SSH_KEY }}
           name: id_rsa # optional
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+          known_hosts: unnecessary
       - run: flutter pub get
       # - run: flutter analyze
       - name: build web page
